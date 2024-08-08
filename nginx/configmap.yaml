@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+      - type: log
+        enabled: true
+        paths:
+          - /usr/share/filebeat/logs/*.log
+    filebeat.config.modules:
+      path: ${path.config}/modules.d/*.yml
+      reload.enabled: false    
+    processors:
+      - add_cloud_metadata: ~
+      - add_host_metadata: ~
+    output.elasticsearch:
+      host: '${NODE_NAME}'
+      hosts: '${ELASTICSEARCH_HOSTS}'
+      allow_older_versions: true
+      username: '${ELASTICSEARCH_USERNAME}'
+      password: '${ELASTICSEARCH_PASSWORD}'
+      protocol: https
+      ssl.certificate_authorities: ["/usr/share/filebeat/certs/ca.crt"]
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-modules
+data:
+  nginx.yml: |
+    - module: nginx
+      access:
+        enabled: true
+        var.paths: ["/usr/share/filebeat/logs/access.log*"]
+      error:
+        enabled: true
+        var.paths: ["/usr/share/filebeat/logs/error.log*"]

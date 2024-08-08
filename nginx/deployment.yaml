@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+   type: RollingUpdate
+   rollingUpdate:
+    maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-logs
+              mountPath: /var/log/nginx
+        - name: filebeat
+          image: docker.elastic.co/beats/filebeat:8.8.0
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: "https://elasticsearch-master:9200"
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: "ELASTICSEARCH_USERNAME"
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-master-credentials
+                  key: username
+            - name: "ELASTICSEARCH_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: elasticsearch-master-credentials
+                  key: password
+          volumeMounts:
+            - name: elasticsearch-master-certs
+              mountPath: /usr/share/filebeat/certs/
+            - name: nginx-logs
+              mountPath: /usr/share/filebeat/logs
+            - name: filebeat-config
+              mountPath: /usr/share/filebeat/filebeat.yml
+              subPath: filebeat.yml
+            - name: filebeat-modules
+              mountPath: /usr/share/filebeat/modules.d/nginx.yml
+              subPath: nginx.yml
+          command: ["filebeat", "-e", "-c", "/usr/share/filebeat/filebeat.yml"]
+          resources: 
+            limits:
+              cpu: 1000m
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          securityContext: 
+            privileged: true
+            runAsUser: 0
+      volumes:
+        - name: nginx-logs
+          emptyDir: {}
+        - name: filebeat-config
+          configMap:
+            name: filebeat-config
+        - name: filebeat-modules
+          configMap:
+            name: filebeat-modules
+        - name: elasticsearch-master-certs
+          secret:
+            secretName: elasticsearch-master-certs
