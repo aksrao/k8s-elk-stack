@@ -1,7 +1,7 @@
 # k8s-elk-stack
 setting up the monitoring of application using Elastic stack on kubernetes cluster
 # the architecture
-![Design](https://file%2B.vscode-resource.vscode-cdn.net/Users/akshayrao/dev/k8s-elk-stack/k8s-elk-stack.png?version%3D1723103952648)
+![Design](/k8s-elk-stack.png)
 # Pre-requisites
 ## Install tools
 - kubectl 
