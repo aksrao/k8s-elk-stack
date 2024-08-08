@@ -1,6 +1,6 @@
 # k8s-elk-stack
 setting up the monitoring of application using Elastic stack on kubernetes cluster
-# the architecture
+# Architecture
 ![Design](/k8s-elk-stack.png)
 # Pre-requisites
 ## Install tools
