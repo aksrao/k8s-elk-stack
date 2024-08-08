@@ -13,3 +13,7 @@ setting up the monitoring of application using Elastic stack on kubernetes clust
     - CPU Limit:- 8m 
     - memory Limit:- 6GB
     - virtual disk:- 128GB
+## Explaination
+- make filebeat (sidecar conatiner) fetch access and error logs of nginx container
+- inject the scrapped logs into elasticsearch
+- kibana will pull the logs from elasticsearch and the logs will be visible in the dashboard.
